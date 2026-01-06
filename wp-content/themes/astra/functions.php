@@ -270,3 +270,20 @@ function handle_secure_form() {
     ]);
 }
 
+
+add_filter('script_loader_tag', function($tag, $handle) {
+
+    $exclude = [
+        'jquery-core',
+        'jquery',
+        'custom-js'
+    ];
+
+    if (!is_admin() && !in_array($handle, $exclude)) {
+        return str_replace(' src', ' defer src', $tag);
+    }
+
+    return $tag;
+}, 10, 2);
+
+
