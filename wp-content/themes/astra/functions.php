@@ -208,24 +208,28 @@ require_once ASTRA_THEME_DIR . 'inc/core/deprecated/deprecated-hooks.php';
 require_once ASTRA_THEME_DIR . 'inc/core/deprecated/deprecated-functions.php';
 
 
-function load_heavy_scripts_globally() {
-    wp_enqueue_script(
-        'heavy-script',
-        get_template_directory_uri() . '/assets/js/unminified/heavy.js',
-        [],
-        null,
-        false
-    );
+function load_heavy_scripts_conditionally() {
+    if (is_front_page()) {
+        wp_enqueue_script(
+            'heavy-script',
+            get_template_directory_uri() . '/assets/js/unminified/heavy.js',
+            [],
+            null,
+            true
+        );
+    }
 }
-add_action('wp_enqueue_scripts', 'load_heavy_scripts_globally');
+add_action('wp_enqueue_scripts', 'load_heavy_scripts_conditionally');
 
 
-function slow_homepage_query() {
+function optimized_homepage_query() {
     if (is_front_page()) {
         get_posts([
             'post_type' => 'post',
-            'posts_per_page' => -1
+            'posts_per_page' => 5,
+            'no_found_rows' => true,
+            'fields' => 'ids'
         ]);
     }
 }
-add_action('wp', 'slow_homepage_query');
+add_action('wp', 'optimized_homepage_query');
