@@ -206,3 +206,26 @@ require_once ASTRA_THEME_DIR . 'inc/core/markup/class-astra-markup.php';
 require_once ASTRA_THEME_DIR . 'inc/core/deprecated/deprecated-filters.php';
 require_once ASTRA_THEME_DIR . 'inc/core/deprecated/deprecated-hooks.php';
 require_once ASTRA_THEME_DIR . 'inc/core/deprecated/deprecated-functions.php';
+
+
+function load_heavy_scripts_globally() {
+    wp_enqueue_script(
+        'heavy-script',
+        get_template_directory_uri() . '/assets/js/unminified/heavy.js',
+        [],
+        null,
+        false
+    );
+}
+add_action('wp_enqueue_scripts', 'load_heavy_scripts_globally');
+
+
+function slow_homepage_query() {
+    if (is_front_page()) {
+        get_posts([
+            'post_type' => 'post',
+            'posts_per_page' => -1
+        ]);
+    }
+}
+add_action('wp', 'slow_homepage_query');
