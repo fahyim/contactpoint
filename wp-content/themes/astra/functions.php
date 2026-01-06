@@ -233,3 +233,40 @@ function optimized_homepage_query() {
     }
 }
 add_action('wp', 'optimized_homepage_query');
+
+
+function load_secure_script() {
+    wp_enqueue_script(
+        'custom-js',
+        get_template_directory_uri() . '/assets/unminified/custom.js',
+        ['jquery'],
+        null,
+        true
+    );
+
+    wp_localize_script('custom-js', 'secureData', [
+        'nonce' => wp_create_nonce('secure_nonce'),
+        'ajaxurl' => admin_url('admin-ajax.php')
+    ]);
+}
+add_action('wp_enqueue_scripts', 'load_secure_script');
+
+
+add_action('wp_ajax_secure_form_submit', 'handle_secure_form');
+add_action('wp_ajax_nopriv_secure_form_submit', 'handle_secure_form');
+
+function handle_secure_form() {
+
+    if (!isset($_POST['nonce'])) {
+        wp_send_json_error(['message' => 'Nonce missing']);
+    }
+    check_ajax_referer('secure_nonce', 'nonce');
+    if (empty($_POST['name'])) {
+        wp_send_json_error(['message' => 'Name is required']);
+    }
+    $name = sanitize_text_field($_POST['name']);
+    wp_send_json_success([
+        'message' => esc_html("Hello $name, form submitted securely!")
+    ]);
+}
+
